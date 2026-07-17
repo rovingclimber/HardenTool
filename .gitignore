@@ -1,0 +1,33 @@
+# Secrets and signing material
+*.pfx
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+secrets/
+keys/
+
+# Build and deployment outputs
+artifacts/
+bundles/
+dist/
+out/
+runs/
+evidence/
+drivers/
+
+# Large or licensed source material
+*.iso
+*.img
+*.vhd
+*.vhdx
+*.qcow2
+installers/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
