@@ -1,0 +1,37 @@
+{
+  "apiVersion": "hardentool/v1",
+  "kind": "DevicePolicy",
+  "metadata": {
+    "name": "packaging-line-hmi",
+    "version": "1.0.0",
+    "description": "Conservative baseline example for a Windows industrial HMI."
+  },
+  "spec": {
+    "compatibility": {
+      "osFamily": "windows",
+      "osEditions": ["Windows 11 IoT Enterprise"],
+      "architecture": "x64",
+      "deviceFamilies": ["packaging-line-hmi"]
+    },
+    "changeControl": {
+      "maximumClass": "reboot",
+      "unattended": false,
+      "maintenanceWindowRequired": true
+    },
+    "preservation": {
+      "unknownApplications": "preserve",
+      "supplierApplications": "preserve",
+      "driverStore": "preserve"
+    },
+    "applications": [
+      { "id": "onedrive", "state": "absent", "removalClass": "approved-removable" }
+    ],
+    "services": [
+      { "id": "XboxGipSvc", "state": "disabled" }
+    ],
+    "capabilities": [
+      { "id": "windows.firewall", "state": "configured" }
+    ],
+    "reboot": { "strategy": "require-operator-approval" }
+  }
+}

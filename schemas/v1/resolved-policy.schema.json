@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hardentool.dev/schemas/v1/resolved-policy.schema.json",
+  "title": "HardenTool ResolvedPolicy",
+  "description": "Immutable target-side policy produced from a DevicePolicy in a controlled build environment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "source", "release", "artifacts", "actions"],
+  "properties": {
+    "apiVersion": { "const": "hardentool/v1" },
+    "kind": { "const": "ResolvedPolicy" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "digest", "commit"],
+      "properties": {
+        "name": { "type": "string" }, "version": { "type": "string" },
+        "digest": { "$ref": "#/$defs/sha256" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resolvedAt", "compilerVersion", "backend"],
+      "properties": {
+        "resolvedAt": { "type": "string", "format": "date-time" },
+        "compilerVersion": { "type": "string" },
+        "backend": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" }, "uniqueItems": true },
+    "actions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/action" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "artifact": {
+      "type": "object", "additionalProperties": false, "required": ["id", "version", "digest", "path"],
+      "properties": { "id": { "type": "string" }, "version": { "type": "string" }, "digest": { "$ref": "#/$defs/sha256" }, "path": { "type": "string", "pattern": "^[A-Za-z0-9._/-]+$" } }
+    },
+    "action": {
+      "type": "object", "additionalProperties": false, "required": ["id", "sourceRef", "changeClass", "rollback", "backend"],
+      "properties": {
+        "id": { "type": "string" }, "sourceRef": { "type": "string" },
+        "changeClass": { "enum": ["read-only", "reversible", "reboot", "service-impacting", "irreversible"] },
+        "rollback": { "enum": ["automatic", "manual-runbook", "none"] },
+        "backend": { "type": "object", "additionalProperties": false, "required": ["resource", "properties"], "properties": { "resource": { "type": "string" }, "properties": { "type": "object" } } }
+      }
+    }
+  }
+}

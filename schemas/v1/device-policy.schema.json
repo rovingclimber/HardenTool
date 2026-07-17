@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hardentool.dev/schemas/v1/device-policy.schema.json",
+  "title": "HardenTool DevicePolicy",
+  "description": "Tooling-neutral desired state. This source form must not contain backend commands, credentials, or target-side version channels.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hardentool/v1" },
+    "kind": { "const": "DevicePolicy" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$" },
+        "version": { "type": "string", "pattern": "^0|[1-9][0-9]*\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$" },
+        "description": { "type": "string", "maxLength": 500 },
+        "labels": { "type": "object", "additionalProperties": { "type": "string", "maxLength": 120 } }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compatibility", "changeControl", "preservation"],
+      "properties": {
+        "compatibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["osFamily", "architecture"],
+          "properties": {
+            "osFamily": { "enum": ["windows"] },
+            "osEditions": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+            "architecture": { "enum": ["x64", "arm64"] },
+            "minimumBuild": { "type": "integer", "minimum": 1 },
+            "deviceFamilies": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$" }, "uniqueItems": true }
+          }
+        },
+        "changeControl": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["maximumClass", "unattended", "maintenanceWindowRequired"],
+          "properties": {
+            "maximumClass": { "enum": ["read-only", "reversible", "reboot", "service-impacting", "irreversible"] },
+            "unattended": { "const": false },
+            "maintenanceWindowRequired": { "type": "boolean" }
+          }
+        },
+        "preservation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["unknownApplications", "supplierApplications", "driverStore"],
+          "properties": {
+            "unknownApplications": { "const": "preserve" },
+            "supplierApplications": { "const": "preserve" },
+            "driverStore": { "const": "preserve" }
+          }
+        },
+        "applications": { "type": "array", "items": { "$ref": "#/$defs/application" }, "uniqueItems": true },
+        "services": { "type": "array", "items": { "$ref": "#/$defs/service" }, "uniqueItems": true },
+        "capabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" }, "uniqueItems": true },
+        "reboot": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "strategy": { "enum": ["forbid", "require-operator-approval"] } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$" },
+        "state": { "enum": ["present", "absent"] },
+        "channel": { "enum": ["approved-latest", "pinned"] },
+        "configurationProfile": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$" },
+        "removalClass": { "enum": ["approved-removable"] },
+        "healthChecks": { "type": "array", "items": { "$ref": "#/$defs/healthCheck" } }
+      },
+      "allOf": [
+        { "if": { "properties": { "state": { "const": "absent" } }, "required": ["state"] }, "then": { "required": ["removalClass"] } },
+        { "if": { "properties": { "state": { "const": "present" } }, "required": ["state"] }, "then": { "required": ["channel"] } }
+      ]
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state"],
+      "properties": { "id": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+$" }, "state": { "enum": ["enabled", "disabled"] } }
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state"],
+      "properties": { "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)+$" }, "state": { "enum": ["present", "absent", "configured"] } }
+    },
+    "healthCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "timeoutSeconds"],
+      "properties": {
+        "type": { "enum": ["file-version", "service-running", "configuration-digest", "local-command"] },
+        "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 300 },
+        "path": { "type": "string", "minLength": 1 },
+        "equals": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
