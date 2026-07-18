@@ -31,3 +31,4 @@ installers/
 *.swp
 Thumbs.db
 Desktop.ini
+out/

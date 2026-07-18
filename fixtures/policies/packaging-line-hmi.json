@@ -14,7 +14,7 @@
       "deviceFamilies": ["packaging-line-hmi"]
     },
     "changeControl": {
-      "maximumClass": "reboot",
+      "maximumClass": "irreversible",
       "unattended": false,
       "maintenanceWindowRequired": true
     },
