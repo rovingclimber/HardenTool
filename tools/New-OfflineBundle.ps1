@@ -131,7 +131,7 @@ try {
         source = [ordered]@{
             name = $policy.metadata.name
             version = $policy.metadata.version
-            digest = Get-Sha256Digest -Path $policyFullPath
+            digest = (Get-Sha256Digest -Path $policyFullPath)
             commit = $gitCommit
         }
         release = [ordered]@{
@@ -153,8 +153,8 @@ try {
         source = $resolvedPolicy.source
         release = $resolvedPolicy.release
         files = @(
-            [ordered]@{ path = 'device-policy.json'; digest = Get-Sha256Digest -Path $policyTarget },
-            [ordered]@{ path = 'resolved-policy.json'; digest = Get-Sha256Digest -Path $resolvedTarget }
+            [ordered]@{ path = 'device-policy.json'; digest = (Get-Sha256Digest -Path $policyTarget) },
+            [ordered]@{ path = 'resolved-policy.json'; digest = (Get-Sha256Digest -Path $resolvedTarget) }
         )
     }
     $manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $resolvedOutput 'manifest.json') -Encoding UTF8
