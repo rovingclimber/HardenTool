@@ -140,7 +140,7 @@ try {
             backend = $Backend
         }
         artifacts = @()
-        actions = @($actions)
+        actions = $actions.ToArray()
     }
 
     $resolvedTarget = Join-Path $resolvedOutput 'resolved-policy.json'
